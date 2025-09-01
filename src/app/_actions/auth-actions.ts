@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import { cookies, headers } from "next/headers";
 import { SignInModel } from "../(auth)/_types/auth.types";
 import { JWT, UserResponse, UserSession } from "../_types/auth.types";
-import { encryptSession } from "../utils/session";
+import { decryptSession, encryptSession } from "../utils/session";
 
 export async function signinAction(model: SignInModel) {
   //get user-agent
@@ -28,6 +28,32 @@ export async function signinAction(model: SignInModel) {
     return {
       isSuccess: false,
     };
+  }
+}
+
+export async function signOutAction() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("mehdi-session")?.value;
+
+  if (!sessionCookie) {
+    return null;
+  }
+
+  const session = await decryptSession(sessionCookie);
+  try {
+    const response = await fetch(`${process.env.API_URL}/identity/signout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionId: session.sessionId }),
+    });
+    if (response.ok) {
+      cookieStore.delete("mehdi-session");
+      return { isSuccess: true };
+    }
+  } catch {
+    return { isSuccess: false };
   }
 }
 

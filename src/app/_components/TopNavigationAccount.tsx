@@ -1,17 +1,34 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { signOutAction } from "../_actions/auth-actions";
 import { useSessionStore } from "../_stores/auth.store";
 import { Button } from "./button";
+import { Loading } from "./loading";
 
 const TopNavigationAccount = () => {
   const status = useSessionStore((state) => state.status);
   const session = useSessionStore((state) => state.session);
+  const clearSession = useSessionStore((state) => state.clearSession);
+
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleSignOut = () => {
+    startTransition(async () => {
+      const response = await signOutAction();
+      if (response?.isSuccess) {
+        clearSession();
+        router.push("/");
+      }
+    });
+  };
 
   return (
     <div className="flex items-center">
-      {status === "loading" && <p>Loading...</p>}
+      {status === "loading" && <Loading color="error" size="xs" text="" />}
       {status === "unauthenticated" && (
         <Button variant="outlined" href="/signin">
           ورود به حساب
@@ -27,9 +44,15 @@ const TopNavigationAccount = () => {
             className="rounded-full"
           />
           <p>{session.fullName}</p>|
-          <Link href={""} className="text-error">
-            خروج
-          </Link>
+          <div onClick={handleSignOut} className="text-error cursor-pointer">
+            {isPending ? (
+              <>
+                <Loading color="error" size="xs" text="" />
+              </>
+            ) : (
+              <span>خروج</span>
+            )}
+          </div>
         </div>
       )}
     </div>
