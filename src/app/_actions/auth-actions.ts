@@ -22,7 +22,7 @@ export async function signinAction(model: SignInModel) {
     if (response.ok) {
       const user = await response.json();
       await setAuthCookieAction(user);
-      return { isSuccess: true, response: user };
+      return { isSuccess: true };
     }
   } catch {
     return {
