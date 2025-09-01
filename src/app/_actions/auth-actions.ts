@@ -1,9 +1,10 @@
 "use server";
 
 import { jwtDecode } from "jwt-decode";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { SignInModel } from "../(auth)/_types/auth.types";
 import { JWT, UserResponse, UserSession } from "../_types/auth.types";
+import { encryptSession } from "../utils/session";
 
 export async function signinAction(model: SignInModel) {
   //get user-agent
@@ -32,6 +33,7 @@ export async function signinAction(model: SignInModel) {
 
 export async function setAuthCookieAction(user: UserResponse) {
   const decoded = jwtDecode<JWT>(user.accessToken);
+
   const session: UserSession = {
     userName: decoded.userName,
     fullName: decoded.fullName,
@@ -42,8 +44,15 @@ export async function setAuthCookieAction(user: UserResponse) {
     sessionExpiry: user.sessionExpiry,
   };
 
-  console.log("decoded: " + JSON.stringify(decoded));
-  console.log("session: " + JSON.stringify(session));
-
   // Set the cookie with the decoded JWT information
+
+  const cookieStore = await cookies();
+  const encryptedSession = await encryptSession(session);
+
+  cookieStore.set("mehdi-session", encryptedSession, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+  });
 }

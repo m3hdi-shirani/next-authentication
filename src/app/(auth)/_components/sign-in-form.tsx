@@ -44,6 +44,7 @@ export const SignInForm: FC = () => {
           errors={errors}
           type="number"
           placeholder="شماره موبایل"
+          value="09130664121"
           label="شماره موبایلت رو وارد کن"
           icon={<Phone />}
         />
@@ -53,6 +54,7 @@ export const SignInForm: FC = () => {
           errors={errors}
           type="password"
           placeholder="رمز عبور"
+          value="12345678"
           label="رمز عبورت رو وارد کن"
           icon={<Eye />}
         />
